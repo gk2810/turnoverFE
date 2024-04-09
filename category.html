@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Your Interests!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        .checkbox-group {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Mark Your Interests!</h1>
+        <p>We will keep you notified.</p>
+        <form id="interestsForm" method="post">
+            <div id="checkboxContainer"></div>
+            <div class="pagination" id="paginationContainer"></div>
+            <button type="submit" class="submit-btn">Save My Interests</button>
+        </form>
+    </div>
+
+    <script>
+        // Fetch data from API and generate checkboxes
+        async function fetchDataAndPopulateCheckboxes(i) {
+            try {
+                let page = +i || 1;
+                console.log("before request &&")
+                const response = await fetch(`http://localhost:3333/getData?page=${page}`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": localStorage.getItem("token")
+                    }
+                });
+                console.log("after request &&")
+                const data = await response.json();
+
+                console.log(":: data ::", data.data);
+
+                let user_categories = await fetch("http://localhost:3333/getMarkedData", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": localStorage.getItem("token")
+                    }
+                });
+
+                user_categories = await user_categories.json();
+
+                console.log("user_categories :", user_categories);
+
+                const checkboxContainer = document.getElementById('checkboxContainer');
+
+                data.data.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.classList.add('checkbox-group');
+
+                    const categoryLabel = document.createElement('label');
+                    categoryLabel.textContent = category.name + ":";
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'interests';
+                    checkbox.value = category.id;
+
+                    if (user_categories.categories.includes(category.id)) {
+                        checkbox.checked = true
+                    }
+
+                    checkbox.addEventListener("change", async (e) => {
+                        e.preventDefault();
+                        let checked_arr = [...user_categories.categories];
+                        if (event.target.checked) {
+                            if (!checked_arr.includes(category.id)) {
+                                checked_arr.push(category.id)
+                            }
+                        } else {
+                            checked_arr = checked_arr.filter(cur => cur !== category.id)
+                        }
+                        console.log("Checkbox with value " + category.id + " has been clicked.");
+                        console.log("New value:", event.target.checked);
+
+                        console.log(":: checked_arr :: _", checked_arr);
+
+                        let response = await fetch("http://localhost:3333/markCategory", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": localStorage.getItem("token")
+                            },
+                            body: JSON.stringify({
+                                category: checked_arr
+                            })
+                        })
+
+                        response = await response.json();
+
+                        console.log(":: response :: _",);
+
+                    })
+
+                    const label = document.createElement('label');
+                    label.textContent = category.category;
+                    categoryDiv.appendChild(checkbox);
+                    categoryDiv.appendChild(label);
+
+                    checkboxContainer.appendChild(categoryDiv);
+                });
+
+                // Generate pagination
+                const paginationContainer = document.getElementById('paginationContainer');
+                paginationContainer.innerHTML = '';
+                const totalPages = Math.ceil(data.count / 6);
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.addEventListener('click', () => {
+                        fetchDataAndPopulateCheckboxes(i);
+                    });
+                    paginationContainer.appendChild(button);
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchDataAndPopulateCheckboxes();
+    </script>
+</body>
+
+</html>

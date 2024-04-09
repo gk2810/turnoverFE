@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+</head>
+
+<body>
+    <h2>Email Verification</h2>
+    <p>Please enter the verification code sent to your email.</p>
+
+    <input type="text" id="verificationCode" placeholder="Enter verification code">
+    <button onclick="checkVerificationCode()">Verify</button>
+
+    <script>
+        function checkVerificationCode() {
+            var enteredCode = document.getElementById("verificationCode").value;
+            var staticCode = "12345678"; // Static verification code
+
+            if (enteredCode === staticCode) {
+                // Redirect to login page
+                window.location.href = "login.html";
+            } else {
+                alert("Verification code incorrect. Please try again.");
+            }
+        }
+    </script>
+</body>
+
+</html>
