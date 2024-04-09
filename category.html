@@ -81,8 +81,8 @@
         async function fetchDataAndPopulateCheckboxes(i) {
             try {
                 let page = +i || 1;
-                console.log("before request &&")
-                const response = await fetch(`http://localhost:3333/getData?page=${page}`, {
+                console.log("before request &&");
+                const response = await fetch(`https://turnoverbe.onrender.com/getData?page=${page}`, {
                     method: "GET",
                     headers: {
                         "Authorization": localStorage.getItem("token")
@@ -93,7 +93,7 @@
 
                 console.log(":: data ::", data.data);
 
-                let user_categories = await fetch("http://localhost:3333/getMarkedData", {
+                let user_categories = await fetch("https://turnoverbe.onrender.com/getMarkedData", {
                     method: "GET",
                     headers: {
                         "Authorization": localStorage.getItem("token")
@@ -137,7 +137,7 @@
 
                         console.log(":: checked_arr :: _", checked_arr);
 
-                        let response = await fetch("http://localhost:3333/markCategory", {
+                        let response = await fetch("https://turnoverbe.onrender.com/markCategory", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
@@ -162,7 +162,7 @@
                     checkboxContainer.appendChild(categoryDiv);
                 });
 
-                // Generate pagination
+                //sGenerate pagination
                 const paginationContainer = document.getElementById('paginationContainer');
                 paginationContainer.innerHTML = '';
                 const totalPages = Math.ceil(data.count / 6);
@@ -170,8 +170,8 @@
                 for (let i = 1; i <= totalPages; i++) {
                     const button = document.createElement('button');
                     button.textContent = i;
-                    button.addEventListener('click', () => {
-                        fetchDataAndPopulateCheckboxes(i);
+                    button.addEventListener('click', async () => {
+                        await fetchDataAndPopulateCheckboxes(i);
                     });
                     paginationContainer.appendChild(button);
                 }
@@ -180,7 +180,7 @@
                 console.error('Error fetching data:', error);
             }
         }
-        fetchDataAndPopulateCheckboxes();
+        fetchDataAndPopulateCheckboxes(1);
     </script>
 </body>
 
